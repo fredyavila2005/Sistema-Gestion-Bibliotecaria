@@ -14,4 +14,4 @@ Los datos se guardan en `MyDrive/SGB/datos/`.
 - [x] P2 — Préstamos
 - [x] P3 — Reservas y multas
 - [x] P4 — Análisis de datos
-- [ ] P5 — Integración final
+- [x] P5 — Integración final
