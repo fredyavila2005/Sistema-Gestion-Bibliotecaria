@@ -12,6 +12,6 @@ Los datos se guardan en `MyDrive/SGB/datos/`.
 - [x] P0 — Base de Colab (Drive, enums, ArchivoUtil)
 - [x] P1 — Usuarios, libros y categorías
 - [x] P2 — Préstamos
-- [ ] P3 — Reservas y multas
-- [ ] P4 — Análisis de datos
+- [x] P3 — Reservas y multas
+- [x] P4 — Análisis de datos
 - [ ] P5 — Integración final
