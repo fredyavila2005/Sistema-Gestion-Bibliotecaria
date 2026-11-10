@@ -1,0 +1,171 @@
+@startuml 03a_Clases_Modelo_y_Repositorios
+title Diagrama de clases: capas de Modelo y Repositorios
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam nodesep 30
+skinparam ranksep 60
+hide empty members
+package "Capa de Repositorios (persistencia)" as PREPO #F1F8E9 {
+  class ArchivoUtil #C8E6C9 {
+    {static} +existe(ruta) : bool
+    {static} +crear_si_no_existe(ruta) : bool
+    {static} +leer_lineas(ruta) : list
+    {static} +escribir_linea(ruta, linea)
+    {static} +reescribir(ruta, lineas)
+    {static} +generar_codigo(prefijo) : str
+  }
+  class UsuarioRepository #DCEDC8 {
+    +ruta : str
+    +guardar(u)
+    +find_by_documento(doc) : Usuario
+    +find_all() : list
+    +actualizar(u) : bool
+  }
+  class CategoriaRepository #DCEDC8 {
+    +ruta : str
+    +guardar(c)
+    +find_by_codigo(cod) : Categoria
+    +find_all() : list
+  }
+  class LibroRepository #DCEDC8 {
+    +ruta : str
+    +guardar(l)
+    +find_all() : list
+    +find_by_isbn(isbn) : Libro
+    +find_by_titulo(txt) : list
+    +find_by_categoria(cod) : list
+    +actualizar(l) : bool
+  }
+  class PrestamoRepository #DCEDC8 {
+    +ruta : str
+    +guardar(p)
+    +find_all() : list
+    +find_by_codigo(cod) : Prestamo
+    +find_by_usuario(doc) : list
+    +find_by_libro(isbn) : list
+    +actualizar(p) : bool
+  }
+  class MultaRepository #DCEDC8 {
+    +ruta : str
+    +guardar(m)
+    +find_all() : list
+    +find_by_codigo(cod) : Multa
+    +find_by_prestamo(cod) : Multa
+    +find_pendientes_usuario(doc) : list
+    +actualizar_estado(cod, estado) : bool
+  }
+  class ReservaRepository #DCEDC8 {
+    +ruta : str
+    +guardar(r)
+    +find_all() : list
+    +find_by_codigo(cod) : Reserva
+    +find_by_libro(isbn) : list
+    +actualizar_estado(cod, estado) : bool
+  }
+}
+package "Capa de Modelo (dominio)" as PMOD #E3F2FD {
+  class Usuario #BBDEFB {
+    +num_documento : str
+    +nombre : str
+    +tipo : TipoUsuarioEnum
+    +correo : str
+    +telefono : str
+    +estado : str
+    +__init__(num_documento, nombre, tipo, correo, telefono, estado)
+    +to_linea() : str
+    {static} +from_linea(linea) : Usuario
+  }
+  class Categoria #BBDEFB {
+    +codigo : str
+    +nombre : str
+    +descripcion : str
+    +__init__(codigo, nombre, descripcion)
+    +to_linea() : str
+    {static} +from_linea(linea) : Categoria
+  }
+  class Libro #BBDEFB {
+    +isbn : str
+    +titulo : str
+    +autor : str
+    +cod_categoria : str
+    +anio : int
+    +total_ejemplares : int
+    +disponibles : int
+    +__init__(isbn, titulo, autor, cod_categoria, anio, total_ejemplares, disponibles)
+    +to_linea() : str
+    {static} +from_linea(linea) : Libro
+  }
+  class Prestamo #BBDEFB {
+    +codigo : str
+    +isbn : str
+    +num_documento : str
+    +fecha_prestamo : str
+    +fecha_limite : str
+    +fecha_devolucion : str
+    +estado : EstadoPrestamoEnum
+    +__init__(codigo, isbn, num_documento, fecha_prestamo, fecha_limite, fecha_devolucion, estado)
+    +to_linea() : str
+    {static} +from_linea(linea) : Prestamo
+  }
+  class Multa #BBDEFB {
+    +codigo : str
+    +cod_prestamo : str
+    +dias_retraso : int
+    +valor : int
+    +estado : EstadoMultaEnum
+    +__init__(codigo, cod_prestamo, dias_retraso, valor, estado)
+    +to_linea() : str
+    {static} +from_linea(linea) : Multa
+  }
+  class Reserva #BBDEFB {
+    +codigo : str
+    +isbn : str
+    +num_documento : str
+    +fecha_reserva : str
+    +estado : EstadoReservaEnum
+    +__init__(codigo, isbn, num_documento, fecha_reserva, estado)
+    +to_linea() : str
+    {static} +from_linea(linea) : Reserva
+  }
+  enum TipoUsuarioEnum #E1BEE7 {
+    ESTUDIANTE
+    DOCENTE
+    EXTERNO
+  }
+  enum EstadoPrestamoEnum #E1BEE7 {
+    ACTIVO
+    DEVUELTO
+    VENCIDO
+  }
+  enum EstadoMultaEnum #E1BEE7 {
+    PENDIENTE
+    PAGADA
+  }
+  enum EstadoReservaEnum #E1BEE7 {
+    ACTIVA
+    CUMPLIDA
+    CANCELADA
+  }
+}
+Usuario --> TipoUsuarioEnum : tipo
+Prestamo --> EstadoPrestamoEnum : estado
+Multa --> EstadoMultaEnum : estado
+Reserva --> EstadoReservaEnum : estado
+UsuarioRepository ..> ArchivoUtil
+CategoriaRepository ..> ArchivoUtil
+LibroRepository ..> ArchivoUtil
+PrestamoRepository ..> ArchivoUtil
+MultaRepository ..> ArchivoUtil
+ReservaRepository ..> ArchivoUtil
+UsuarioRepository ..> Usuario
+CategoriaRepository ..> Categoria
+LibroRepository ..> Libro
+PrestamoRepository ..> Prestamo
+MultaRepository ..> Multa
+ReservaRepository ..> Reserva
+MultaRepository --> PrestamoRepository : repo_prestamos
+@enduml

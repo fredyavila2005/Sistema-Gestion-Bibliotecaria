@@ -1,0 +1,66 @@
+@startuml 02_Registro_Libro
+title Actividad: registro de una categoría y de un libro (LibroService)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  DiamondBackgroundColor #FFF8E1
+  DiamondBorderColor #F9A825
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+start
+partition "Registrar categoría (registrar_categoria)" {
+  :Leer código, nombre y descripción opcional;
+  :Código a mayúsculas y strip a los datos;
+  if (¿Código y nombre no vacíos?) then (no)
+    #FFCDD2:ValueError "dato vacío";
+    :El menú muestra ✘;
+    stop
+  endif
+  :CategoriaRepository.find_by_codigo(código);
+  if (¿Ya existe la categoría?) then (sí)
+    #FFCDD2:ValueError "Ya existe la categoría";
+    :El menú muestra ✘;
+    stop
+  endif
+  :CategoriaRepository.guardar(categoría);
+}
+partition "Registrar libro (registrar)" {
+  :Leer ISBN, título, autor, código de categoría,\naño (leer_entero) y ejemplares (mínimo 1);
+  if (¿ISBN, título y autor no vacíos?) then (no)
+    #FFCDD2:ValueError "dato vacío";
+    :El menú muestra ✘;
+    stop
+  endif
+  :CategoriaRepository.find_by_codigo(cod_categoria);
+  if (¿La categoría existe?) then (no)
+    #FFCDD2:ValueError "La categoría no existe. Regístrala primero";
+    :El menú muestra ✘;
+    stop
+  endif
+  if (¿Año entre 1000 y 2100?) then (no)
+    #FFCDD2:ValueError "El año de publicación no es válido";
+    :El menú muestra ✘;
+    stop
+  endif
+  if (¿Ejemplares es un entero >= 1?) then (no)
+    #FFCDD2:ValueError "El número de ejemplares debe ser al menos 1";
+    :El menú muestra ✘;
+    stop
+  endif
+  :LibroRepository.find_by_isbn(isbn);
+  if (¿Ya existe un libro con ese ISBN?) then (sí)
+    #FFCDD2:ValueError "Ya existe un libro con el ISBN";
+    :El menú muestra ✘;
+    stop
+  endif
+  :Crear Libro con disponibles = total_ejemplares;
+  :LibroRepository.guardar(libro);
+}
+:El menú muestra ✔ Libro registrado;
+stop
+@enduml

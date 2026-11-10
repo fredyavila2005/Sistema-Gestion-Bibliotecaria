@@ -1,0 +1,36 @@
+@startuml 06_Pago_Multa
+title Actividad: pago de una multa (MultaService.pagar)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  DiamondBackgroundColor #FFF8E1
+  DiamondBorderColor #F9A825
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+start
+:menu_reservas_multas: leer código de la multa;
+:MultaRepository.find_by_codigo(código);
+if (¿La multa existe?) then (no)
+  #FFCDD2:ValueError "No existe una multa con el código";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿La multa ya está PAGADA?) then (sí)
+  #FFCDD2:ValueError "Esa multa ya fue pagada";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:MultaRepository.actualizar_estado(código, PAGADA)\n(reescribe multas.txt);
+:multa.estado = PAGADA;
+:El menú muestra ✔ Multa pagada;
+note right
+  Con la multa pagada, el usuario deja de tener
+  multas pendientes y puede volver a pedir préstamos.
+end note
+stop
+@enduml

@@ -1,0 +1,65 @@
+@startuml 02_Dominio_Completo
+title Diagrama de dominio completo: Sistema de Gestión Bibliotecaria (SGB)
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam class {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+hide circle
+hide methods
+
+class Usuario {
+  num_documento
+  nombre
+  tipo
+  correo
+  telefono
+  estado
+}
+class Categoria {
+  codigo
+  nombre
+  descripcion
+}
+class Libro {
+  isbn
+  titulo
+  autor
+  anio
+  total_ejemplares
+  disponibles
+}
+class Prestamo {
+  codigo
+  fecha_prestamo
+  fecha_limite
+  fecha_devolucion
+  estado
+}
+class Multa {
+  codigo
+  dias_retraso
+  valor
+  estado
+}
+class Reserva {
+  codigo
+  fecha_reserva
+  estado
+}
+
+Categoria "1" -- "0..*" Libro : agrupa >
+Usuario "1" -- "0..*" Prestamo : solicita >
+Usuario "1" -- "0..*" Reserva : hace >
+Libro "1" -- "0..*" Prestamo : es objeto de >
+Libro "1" -- "0..*" Reserva : es objeto de >
+Prestamo "1" -- "0..1" Multa : puede generar >
+
+note right of Libro
+  Un libro pertenece a una sola categoría
+  (atributo cod_categoria en el código).
+end note
+@enduml

@@ -1,0 +1,89 @@
+@startuml 06_Diagrama_Secuencia
+title Secuencia: registrar un préstamo (PrestamoService.prestar)
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam sequence {
+  ParticipantBackgroundColor #E3F2FD
+  ParticipantBorderColor #1565C0
+  LifeLineBorderColor #78909C
+  BoxBorderColor #B0BEC5
+}
+autonumber
+actor Usuario
+participant "Interfaz de consola\n(menu_prestamos)" as UI
+participant "PrestamoService" as PS
+participant "UsuarioRepository" as UR
+participant "MultaRepository" as MR
+participant "PrestamoRepository" as PR
+participant "LibroRepository" as LR
+participant "libro : Libro" as LB
+
+Usuario -> UI : opción 1 (Prestar un libro)
+UI -> Usuario : pide documento, ISBN y fecha
+Usuario --> UI : documento, isbn, fecha (Enter = hoy)
+UI -> PS : prestar(documento, isbn, fecha)
+activate PS
+
+PS -> PS : _parsear_fecha(fecha)
+alt fecha inválida
+  PS --> UI : ValueError "Fecha inválida"
+else fecha válida
+  PS -> UR : find_by_documento(documento)
+  UR --> PS : usuario (o None)
+end
+alt usuario es None
+  PS --> UI : ValueError "No existe un usuario"
+else usuario existe
+  PS -> PS : comprueba usuario.estado == "ACTIVO"
+end
+alt usuario no está activo
+  PS --> UI : ValueError "El usuario no está activo"
+else usuario activo
+  PS -> MR : find_pendientes_usuario(documento)
+  MR --> PS : lista de multas pendientes
+end
+alt hay multas pendientes
+  PS --> UI : ValueError "El usuario tiene multas pendientes"
+else sin multas pendientes
+  PS -> PR : find_by_usuario(documento)
+  PR --> PS : préstamos del usuario
+  PS -> PS : filtra los no devueltos y obtiene el cupo del tipo
+end
+alt préstamos sin devolver >= cupo
+  PS --> UI : ValueError "El usuario alcanzó su cupo"
+else cupo disponible
+  PS -> LR : find_by_isbn(isbn)
+  LR --> PS : libro (o None)
+end
+alt libro es None
+  PS --> UI : ValueError "No existe un libro con el ISBN"
+else libro existe
+  PS -> PS : comprueba libro.disponibles
+end
+alt disponibles < 1
+  PS --> UI : ValueError "No hay ejemplares disponibles"
+else hay ejemplares
+  PS -> PS : busca isbn entre los préstamos sin devolver
+end
+alt el usuario ya tiene ese libro
+  PS --> UI : ValueError "El usuario ya tiene prestado ese libro"
+else no lo tiene
+  PS -> PS : fecha_límite = fecha + días del tipo de usuario\n(estudiante 7, docente 15, externo 5)
+  create "prestamo : Prestamo" as PRE
+  PS -> PRE : Prestamo(código PRE-..., isbn, documento, fecha, límite)
+  PS -> PR : guardar(prestamo)
+  PS -> LB : disponibles = disponibles - 1
+  PS -> LR : actualizar(libro)
+  LR --> PS : True
+  PS --> UI : prestamo
+  UI --> Usuario : ✔ Préstamo registrado
+end
+deactivate PS
+
+note over UI
+  En los caminos de error el menú captura el ValueError
+  y muestra ✘ con el mensaje; no se guarda nada más.
+end note
+@enduml

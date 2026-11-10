@@ -1,0 +1,64 @@
+@startuml 04_Devolucion_Multa
+title Actividad: devolución de un libro y cálculo de multa por retraso
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  DiamondBackgroundColor #FFF8E1
+  DiamondBorderColor #F9A825
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+start
+:menu_prestamos: leer código del préstamo\ny fecha de devolución (Enter = hoy);
+:PrestamoRepository.find_by_codigo(código);
+if (¿El préstamo existe?) then (no)
+  #FFCDD2:ValueError "No existe un préstamo con el código";
+  :El menú muestra ✘;
+  stop
+endif
+if (¿El préstamo ya está DEVUELTO?) then (sí)
+  #FFCDD2:ValueError "Ese préstamo ya fue devuelto";
+  :El menú muestra ✘;
+  stop
+endif
+if (¿Fecha válida y no anterior a la fecha del préstamo?) then (no)
+  #FFCDD2:ValueError "Fecha inválida o anterior al préstamo";
+  :El menú muestra ✘;
+  stop
+endif
+:Registrar fecha_devolucion y estado = DEVUELTO;
+:PrestamoRepository.actualizar(prestamo);
+:LibroRepository.find_by_isbn(isbn);
+if (¿El libro existe?) then (sí)
+  :disponibles = min(disponibles + 1, total_ejemplares);
+  :LibroRepository.actualizar(libro);
+endif
+:ultima_multa = None;
+if (¿multa_service configurado?) then (sí)
+  :MultaService.calcular_multa(prestamo);
+  :MultaRepository.find_by_prestamo(código);
+  if (¿Ya existe una multa para ese préstamo?) then (sí)
+    :Retornar la multa existente (no se duplica);
+  else (no)
+    :días = fecha_devolucion - fecha_limite;
+    if (¿días > 0?) then (sí)
+      :Crear Multa (código MUL-..., valor = días x 1000 COP,\nestado PENDIENTE);
+      :MultaRepository.guardar(multa);
+    else (no)
+      :Sin multa: devolución a tiempo;
+    endif
+  endif
+endif
+if (¿reserva_service configurado?) then (sí)
+  :ReservaService.cumplir_siguiente(isbn)\n(la reserva ACTIVA más antigua pasa a CUMPLIDA);
+endif
+:El menú muestra ✔ Devolución registrada;
+if (¿Se generó una multa?) then (sí)
+  :El menú muestra ⚠ Multa generada;
+endif
+stop
+@enduml

@@ -1,0 +1,125 @@
+@startuml 04_Diagrama_Objetos
+title Diagrama de objetos: datos de prueba de cargar_datos_prueba()
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam object {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+top to bottom direction
+
+object "LIT : Categoria" as cat_lit {
+  codigo = "LIT"
+  nombre = "Literatura"
+  descripcion = "Novelas y cuentos"
+}
+object "TEC : Categoria" as cat_tec {
+  codigo = "TEC"
+  nombre = "Tecnologia"
+  descripcion = "Programacion y sistemas"
+}
+object "libroCien : Libro" as libro_cien {
+  isbn = "9789585001234"
+  titulo = "Cien anios de soledad"
+  autor = "Gabriel Garcia Marquez"
+  cod_categoria = "LIT"
+  anio = 1967
+  total_ejemplares = 5
+  disponibles = 3
+}
+object "libroEstructuras : Libro" as libro_est {
+  isbn = "9789587654321"
+  titulo = "Estructuras de datos en Python"
+  autor = "Ana Gomez"
+  cod_categoria = "TEC"
+  anio = 2020
+  total_ejemplares = 2
+  disponibles = 0
+}
+object "maria : Usuario" as maria {
+  num_documento = "1098765432"
+  nombre = "Maria Lopez"
+  tipo = ESTUDIANTE
+  estado = "ACTIVO"
+}
+object "carlos : Usuario" as carlos {
+  num_documento = "1055555555"
+  nombre = "Carlos Ruiz"
+  tipo = EXTERNO
+  estado = "ACTIVO"
+}
+object "juan : Usuario" as juan {
+  num_documento = "1001234567"
+  nombre = "Juan Perez"
+  tipo = DOCENTE
+  estado = "ACTIVO"
+}
+object "preMaria : Prestamo" as pre_maria {
+  codigo = "PRE-20251005090000"
+  isbn = "9789585001234"
+  num_documento = "1098765432"
+  fecha_prestamo = "2025-10-05"
+  fecha_limite = "2025-10-12"
+  fecha_devolucion = "2025-10-15"
+  estado = DEVUELTO
+}
+object "preCarlos : Prestamo" as pre_carlos {
+  codigo = "PRE-20251015083000"
+  isbn = "9789585001234"
+  num_documento = "1055555555"
+  fecha_prestamo = "2025-10-15"
+  fecha_limite = "2025-10-20"
+  fecha_devolucion = "2025-10-25"
+  estado = DEVUELTO
+}
+object "preJuan : Prestamo" as pre_juan {
+  codigo = "PRE-20251012110000"
+  isbn = "9789587654321"
+  num_documento = "1001234567"
+  fecha_prestamo = "2025-10-12"
+  fecha_limite = "2025-10-27"
+  fecha_devolucion = null
+  estado = ACTIVO
+}
+object "mulMaria : Multa" as mul_maria {
+  codigo = "MUL-20251015120000"
+  cod_prestamo = "PRE-20251005090000"
+  dias_retraso = 3
+  valor = 3000
+  estado = PAGADA
+}
+object "mulCarlos : Multa" as mul_carlos {
+  codigo = "MUL-20251025140000"
+  cod_prestamo = "PRE-20251015083000"
+  dias_retraso = 5
+  valor = 5000
+  estado = PENDIENTE
+}
+object "resMaria : Reserva" as res_maria {
+  codigo = "RES-20251016090000"
+  isbn = "9789587654321"
+  num_documento = "1098765432"
+  fecha_reserva = "2025-10-16"
+  estado = ACTIVA
+}
+
+cat_lit -- libro_cien : agrupa
+cat_tec -- libro_est : agrupa
+maria -- pre_maria : solicita
+carlos -- pre_carlos : solicita
+juan -- pre_juan : solicita
+pre_maria -- libro_cien : sobre
+pre_carlos -- libro_cien : sobre
+pre_juan -- libro_est : sobre
+pre_maria -- mul_maria : genera
+pre_carlos -- mul_carlos : genera
+maria -- res_maria : hace
+res_maria -- libro_est : sobre
+
+note right of mul_carlos
+  Multa pendiente: bloquearía nuevos
+  préstamos de Carlos (PrestamoService.prestar).
+end note
+@enduml

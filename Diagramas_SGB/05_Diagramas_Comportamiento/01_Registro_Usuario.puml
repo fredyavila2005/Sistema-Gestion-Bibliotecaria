@@ -1,0 +1,53 @@
+@startuml 01_Registro_Usuario
+title Actividad: registro de un usuario (UsuarioService.registrar)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  DiamondBackgroundColor #FFF8E1
+  DiamondBorderColor #F9A825
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+start
+:menu_usuarios: leer documento, nombre,\ntipo (1-3), correo y teléfono;
+:Quitar espacios (strip) a cada dato;
+if (¿Documento solo con dígitos?) then (no)
+  #FFCDD2:ValueError "El documento debe contener solo números";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿Nombre no vacío?) then (no)
+  #FFCDD2:ValueError "El nombre no puede estar vacío";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿Tipo es un TipoUsuarioEnum?) then (no)
+  #FFCDD2:ValueError "El tipo de usuario no es válido";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿Correo con formato válido?) then (no)
+  #FFCDD2:ValueError "El correo no tiene un formato válido";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿Teléfono solo con dígitos?) then (no)
+  #FFCDD2:ValueError "El teléfono debe contener solo números";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:UsuarioRepository.find_by_documento(documento);
+if (¿Ya existe un usuario con ese documento?) then (sí)
+  #FFCDD2:ValueError "Ya existe un usuario con el documento";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:Crear Usuario con estado ACTIVO;
+:UsuarioRepository.guardar(usuario)\n(ArchivoUtil.escribir_linea en usuarios.txt);
+:El menú muestra ✔ Usuario registrado;
+stop
+@enduml

@@ -1,0 +1,35 @@
+@startuml 03c_Arquitectura_Capas
+title Arquitectura de tres capas del SGB
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam nodesep 30
+skinparam ranksep 60
+hide empty members
+left to right direction
+package "Interfaz de usuario (celdas 4.x)" #ECEFF1 {
+  component "menu_principal\nmenu_usuarios\nmenu_libros\nmenu_prestamos\nmenu_reservas_multas\nmenu_analisis" as UI
+}
+package "Capa de Servicios" #FFF8E1 {
+  component "UsuarioService\nLibroService\nPrestamoService\nMultaService\nReservaService\nAnalisisDatosService" as SV
+}
+package "Capa de Repositorios" #F1F8E9 {
+  component "ArchivoUtil\nUsuarioRepository\nCategoriaRepository\nLibroRepository\nPrestamoRepository\nMultaRepository\nReservaRepository" as RP
+}
+package "Capa de Modelo" #E3F2FD {
+  component "Usuario, Categoria, Libro\nPrestamo, Multa, Reserva\nEnumeraciones" as MD
+}
+database "Archivos .txt en Google Drive\n(campos separados por |)" as DB
+UI --> SV : invoca
+SV --> RP : consulta y guarda
+RP --> MD : to_linea() / from_linea()
+RP --> DB : lee y escribe
+SV ..> MD : crea y modifica
+note bottom of SV
+  AnalisisDatosService lee los .txt directamente
+  mediante ArchivoUtil (según el PDF, sección 7.3).
+end note
+@enduml

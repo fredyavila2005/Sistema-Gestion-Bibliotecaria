@@ -1,0 +1,54 @@
+@startuml 05_Reserva_Libro
+title Actividad: reserva de un libro sin ejemplares (ReservaService.reservar)
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+  DiamondBackgroundColor #FFF8E1
+  DiamondBorderColor #F9A825
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+start
+:menu_reservas_multas: leer documento, ISBN y fecha\n(Enter = fecha de hoy);
+if (¿Fecha con formato AAAA-MM-DD?) then (no)
+  #FFCDD2:ValueError "Fecha inválida";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:UsuarioRepository.find_by_documento(documento);
+if (¿El usuario existe?) then (no)
+  #FFCDD2:ValueError "No existe un usuario con el documento";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿Estado del usuario es ACTIVO?) then (no)
+  #FFCDD2:ValueError "El usuario no está activo";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:LibroRepository.find_by_isbn(isbn);
+if (¿El libro existe?) then (no)
+  #FFCDD2:ValueError "No existe un libro con el ISBN";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+if (¿El libro tiene ejemplares disponibles?) then (sí)
+  #FFCDD2:ValueError "El libro tiene ejemplares disponibles: puedes prestarlo";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:ReservaRepository.find_by_libro(isbn);
+if (¿El usuario ya tiene una reserva ACTIVA de ese libro?) then (sí)
+  #FFCDD2:ValueError "El usuario ya tiene una reserva activa de ese libro";
+  :El menú muestra ✘ y vuelve al menú;
+  stop
+endif
+:Crear Reserva (código RES-..., estado ACTIVA);
+:ReservaRepository.guardar(reserva);
+:El menú muestra ✔ Reserva registrada;
+stop
+@enduml

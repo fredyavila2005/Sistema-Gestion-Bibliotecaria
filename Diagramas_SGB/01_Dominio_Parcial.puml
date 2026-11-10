@@ -1,0 +1,49 @@
+@startuml 01_Dominio_Parcial
+title Diagrama de dominio parcial: préstamo de libros y multas
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam class {
+  BackgroundColor #E3F2FD
+  BorderColor #1565C0
+}
+hide circle
+hide methods
+left to right direction
+
+class Usuario {
+  num_documento
+  nombre
+  tipo
+  estado
+}
+class Libro {
+  isbn
+  titulo
+  total_ejemplares
+  disponibles
+}
+class Prestamo {
+  codigo
+  fecha_prestamo
+  fecha_limite
+  fecha_devolucion
+  estado
+}
+class Multa {
+  codigo
+  dias_retraso
+  valor
+  estado
+}
+
+Usuario "1" -- "0..*" Prestamo : solicita >
+Prestamo "0..*" -- "1" Libro : tiene como objeto >
+Prestamo "1" -- "0..1" Multa : puede generar >
+
+note bottom of Multa
+  Se origina solo si la devolución
+  es posterior a la fecha límite.
+end note
+@enduml

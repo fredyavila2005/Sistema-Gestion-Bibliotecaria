@@ -1,0 +1,86 @@
+@startuml 03b_Clases_Servicios
+title Diagrama de clases: capa de Servicios y sus dependencias
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam defaultFontName Arial
+skinparam ArrowColor #44546A
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam nodesep 30
+skinparam ranksep 60
+hide empty members
+package "Capa de Servicios (lógica de negocio)" as PSERV #FFF8E1 {
+  class UsuarioService #FFE0B2 {
+    +registrar(num_documento, nombre, tipo, correo, telefono) : Usuario
+    +buscar_por_documento(doc) : Usuario
+    +actualizar(doc, correo, telefono, estado) : Usuario
+    +listar_todos() : list
+  }
+  class LibroService #FFE0B2 {
+    +registrar_categoria(codigo, nombre, descripcion) : Categoria
+    +listar_categorias() : list
+    +registrar(isbn, titulo, autor, cod_categoria, anio, total_ejemplares) : Libro
+    +buscar_por_isbn(isbn) : Libro
+    +buscar_por_titulo(txt) : list
+    +listar_por_categoria(cod) : list
+    +listar_disponibles() : list
+  }
+  class PrestamoService #FFE0B2 {
+    +ultima_multa : Multa
+    -_parsear_fecha(texto) : datetime
+    -_prestamos_sin_devolver(doc) : list
+    +prestar(num_documento, isbn, fecha_prestamo) : Prestamo
+    +devolver(codigo, fecha_devolucion) : Prestamo
+    +buscar_por_codigo(codigo) : Prestamo
+    +historial_usuario(doc) : list
+    +listar_vencidos(fecha) : list
+  }
+  class MultaService #FFE0B2 {
+    +calcular_multa(prestamo) : Multa
+    +pagar(cod_multa) : Multa
+    +listar_pendientes_usuario(doc) : list
+  }
+  class ReservaService #FFE0B2 {
+    +reservar(num_documento, isbn, fecha_reserva) : Reserva
+    +cancelar(codigo) : Reserva
+    +listar_por_libro(isbn) : list
+    +cumplir_siguiente(isbn) : Reserva
+  }
+  class AnalisisDatosService #FFE0B2 {
+    +ruta_prestamos : str
+    +ruta_libros : str
+    +ruta_categorias : str
+    +ruta_usuarios : str
+    +ruta_multas : str
+    +libros_mas_prestados(fecha_ini, fecha_fin, top_n) : list
+    +prestamos_por_categoria() : list
+    +morosidad_por_tipo(fecha_corte) : dict
+    +duracion_promedio_prestamo() : tuple
+    +reporte_multas() : dict
+  }
+}
+package "Capa de Repositorios (persistencia)" as PREPO #F1F8E9 {
+  class ArchivoUtil #C8E6C9
+  class UsuarioRepository #DCEDC8
+  class CategoriaRepository #DCEDC8
+  class LibroRepository #DCEDC8
+  class PrestamoRepository #DCEDC8
+  class MultaRepository #DCEDC8
+  class ReservaRepository #DCEDC8
+}
+UsuarioService --> UsuarioRepository : repo
+LibroService --> LibroRepository : repo_libros
+LibroService --> CategoriaRepository : repo_categorias
+PrestamoService --> PrestamoRepository : repo_prestamos
+PrestamoService --> UsuarioRepository : repo_usuarios
+PrestamoService --> LibroRepository : repo_libros
+PrestamoService "0..1" --> MultaRepository : repo_multas
+PrestamoService "0..1" --> MultaService : multa_service
+PrestamoService "0..1" --> ReservaService : reserva_service
+MultaService --> MultaRepository : repo_multas
+MultaService --> PrestamoRepository : repo_prestamos
+ReservaService --> ReservaRepository : repo_reservas
+ReservaService --> UsuarioRepository : repo_usuarios
+ReservaService --> LibroRepository : repo_libros
+AnalisisDatosService ..> ArchivoUtil : lee los .txt por ruta
+@enduml
